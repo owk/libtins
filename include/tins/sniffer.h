@@ -427,13 +427,18 @@ template <typename T>
 class HandlerProxy {
 public:
     typedef T* ptr_type;
-    typedef bool (T::*fun_type)(PDU&) ;
+    // typedef bool (T::*fun_type)(PDU&) ;
+    typedef bool (T::*fun_type)(Packet&) ;
 
     HandlerProxy(ptr_type ptr, fun_type function)
     : object_(ptr), fun_(function) {}
 
-    bool operator()(PDU& pdu) {
-        return (object_->*fun_)(pdu);
+    // bool operator()(PDU& pdu) {
+    //    return (object_->*fun_)(pdu);
+    // }
+    
+    bool operator()(Packet& packet) {
+        return (object_->*fun_)(packet);
     }
 private:
     ptr_type object_;
@@ -673,7 +678,7 @@ void Tins::BaseSniffer::sniff_loop(Functor function, uint32_t max_packets) {
     for(iterator it = begin(); it != end(); ++it) {
         try {
             // If the functor returns false, we're done
-            #if TINS_IS_CXX11 && !defined(_MSC_VER)
+            #if TINS_IS_CXX11 //&& !defined(_MSC_VER)
             if (!Tins::Internals::invoke_loop_cb(function, *it)) {
                 return;
             }
